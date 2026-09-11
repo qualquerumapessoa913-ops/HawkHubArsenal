@@ -1,5 +1,5 @@
 -- ============================================================
--- HAWK HUB UI – Custom Library (COMPLETA)
+-- HAWK HUB UI – Custom Library (COMPLETA E CORRIGIDA)
 -- ============================================================
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -56,7 +56,6 @@ function UI.new(config)
     mainStroke.Transparency = 0.5
     mainStroke.Parent = self.main
 
-    -- Sombra
     local shadow = Instance.new("ImageLabel")
     shadow.Image = "rbxassetid://5028857084"
     shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
@@ -69,7 +68,6 @@ function UI.new(config)
     shadow.ZIndex = 0
     shadow.Parent = self.main
 
-    -- Header
     self.header = Instance.new("Frame")
     self.header.Size = UDim2.new(1, 0, 0, 45)
     self.header.BackgroundColor3 = Theme.Surface
@@ -109,7 +107,6 @@ function UI.new(config)
     self.subtitle.TextXAlignment = Enum.TextXAlignment.Left
     self.subtitle.Parent = self.header
 
-    -- Botão Minimizar
     local minimizeBtn = Instance.new("TextButton")
     minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
     minimizeBtn.Position = UDim2.new(1, -75, 0.5, -15)
@@ -129,7 +126,6 @@ function UI.new(config)
         self:ToggleMinimize()
     end)
 
-    -- Botão Fechar
     local closeBtn = Instance.new("TextButton")
     closeBtn.Size = UDim2.new(0, 30, 0, 30)
     closeBtn.Position = UDim2.new(1, -40, 0.5, -15)
@@ -155,7 +151,6 @@ function UI.new(config)
         self.gui:Destroy()
     end)
 
-    -- Sidebar
     self.sidebar = Instance.new("Frame")
     self.sidebar.Size = UDim2.new(0, 150, 1, -45)
     self.sidebar.Position = UDim2.new(0, 0, 0, 45)
@@ -163,7 +158,6 @@ function UI.new(config)
     self.sidebar.BorderSizePixel = 0
     self.sidebar.Parent = self.main
 
-    -- Content
     self.content = Instance.new("Frame")
     self.content.Size = UDim2.new(1, -170, 1, -65)
     self.content.Position = UDim2.new(0, 160, 0, 55)
@@ -274,7 +268,8 @@ function UI:CreateTab(config)
     tab.container = container
     tab.btn = btn
 
-    btn.MouseButton1Click:Connect(function()
+    -- Função para ativar esta aba (sem usar :Fire())
+    local function activate()
         if self.currentTab then
             self.currentTab.container.Visible = false
             TweenService:Create(self.currentTab.btn, TweenInfo.new(0.15), {
@@ -288,13 +283,17 @@ function UI:CreateTab(config)
             BackgroundColor3 = Theme.Primary,
             TextColor3 = Theme.Text
         }):Play()
-    end)
+    end
+
+    tab.activate = activate
+
+    btn.MouseButton1Click:Connect(activate)
 
     table.insert(self.tabs, tab)
 
+    -- Ativa a primeira aba automaticamente
     if #self.tabs == 1 then
-        task.wait(0.05)
-        btn.MouseButton1Click:Fire()
+        task.defer(activate)
     end
 
     return tab

@@ -2,21 +2,15 @@
     "Lua.diagnostics.globals": [
         "game", "workspace", "Instance", "Color3", "UDim2", "UDim",
         "Enum", "task", "CFrame", "Vector3", "Vector2", "RaycastParams",
-        "TweenInfo", "Rect", "Random", "BrickColor", "NumberRange",
-        "wait", "print", "warn", "error", "pcall", "tostring",
-        "tonumber", "math", "ipairs", "pairs", "require", "script",
-        "loadstring", "getgenv", "getfenv", "setclipboard", "writefile",
-        "readfile", "isfile", "delfile", "fireclickdetector", "mouse1click",
-        "syn", "krnl", "loadstring", "shared", "_G"
+        "TweenInfo", "Rect", "wait", "print", "warn", "error", "pcall",
+        "tostring", "tonumber", "math", "ipairs", "pairs", "require",
+        "script", "loadstring", "getgenv", "getfenv", "setclipboard",
+        "writefile", "readfile", "isfile", "fireclickdetector",
+        "mouse1click", "syn", "krnl", "shared", "_G"
     ],
     "Lua.diagnostics.disable": [
-        "undefined-global",
-        "undefined-field",
-        "need-check-nil",
-        "deprecated"
+        "undefined-global", "undefined-field", "need-check-nil", "deprecated"
     ],
     "Lua.workspace.checkThirdParty": false,
-    "Lua.workspace.ignoreDir": [
-        "node_modules"
-    ]
+    "Lua.workspace.ignoreDir": ["node_modules"]
 }

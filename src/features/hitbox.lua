@@ -1,40 +1,48 @@
+-- ============================================================
+-- HEAD EXPANDER – Aumenta a hitbox da cabeça dos inimigos
+-- ============================================================
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
 
 local Hitbox = {}
 Hitbox.enabled = false
-Hitbox.size = 5 -- Multiplicador de tamanho
+Hitbox.size = 4
+Hitbox.originalSizes = {}
 
-function Hitbox:expandPlayer(player)
-    if not player.Character or player == LocalPlayer then return end
-    local head = player.Character:FindFirstChild("Head")
-    if head and not head:FindFirstChild("HitboxExpander") then
-        -- Aumenta o tamanho da hitbox da cabeça
-        local originalSize = head.Size
-        head.Size = originalSize * self.size
-        -- Marca para não expandir novamente
-        local marker = Instance.new("BoolValue", head)
-        marker.Name = "HitboxExpander"
-    end
-end
-
-function Hitbox:restorePlayer(player)
+local function expand(player)
     if not player.Character then return end
     local head = player.Character:FindFirstChild("Head")
-    if head and head:FindFirstChild("HitboxExpander") then
-        local marker = head:FindChild("HitboxExpander")
-        -- Restaura o tamanho original (a lógica exata depende de como o jogo gerencia a hitbox)
-        marker:Destroy()
+    if not head then return end
+    if not Hitbox.originalSizes[player] then
+        Hitbox.originalSizes[player] = head.Size
+    end
+    local origSize = Hitbox.originalSizes[player]
+    head.Size = Vector3.new(origSize.X * Hitbox.size, origSize.Y * Hitbox.size, origSize.Z * Hitbox.size)
+    head.Transparency = 0.7
+    head.CanCollide = false
+    head.Massless = true
+end
+
+local function restore(player)
+    if not player.Character then return end
+    local head = player.Character:FindFirstChild("Head")
+    if head and Hitbox.originalSizes[player] then
+        head.Size = Hitbox.originalSizes[player]
+        head.Transparency = 0
+        head.CanCollide = true
     end
 end
 
 function Hitbox:start()
     RunService.Heartbeat:Connect(function()
-        if not self.enabled then return end
         for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer then
-                self:expandPlayer(player)
+            if player ~= LocalPlayer and player.Character then
+                if Hitbox.enabled then
+                    expand(player)
+                else
+                    restore(player)
+                end
             end
         end
     end)

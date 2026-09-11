@@ -1,5 +1,5 @@
 -- ============================================================
--- GUN MODS – Rapid Fire + No Recoil
+-- GUN MODS – Rapid Fire + No Recoil (CORRIGIDO)
 -- ============================================================
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -9,62 +9,61 @@ local GunMods = {}
 GunMods.rapidFire = false
 GunMods.noRecoil = false
 
--- Tenta setar um valor em qualquer campo (number ou object.Value)
 local function trySet(obj, fieldName, value)
     pcall(function()
         local field = obj[fieldName]
         if field == nil then return end
         if typeof(field) == "number" then
-            -- É um número direto (não dá pra modificar, pula)
-            return
-        end
-        if typeof(field) == "Instance" then
-            -- É um objeto (NumberValue, IntValue, etc)
+            -- número direto, não modifica
+            obj[fieldName] = value
+        elseif typeof(field) == "Instance" then
             pcall(function() field.Value = value end)
-        else
-            -- Tenta atribuir direto
-            pcall(function() obj[fieldName] = value end)
         end
     end)
 end
 
+local lastToolModified = nil
+local lastFireRate = nil
+
 function GunMods:start()
+    -- Só aplica modificação quando trocar de tool (evita spam)
     RunService.Heartbeat:Connect(function()
         local char = LocalPlayer.Character
         if not char then return end
 
-        for _, tool in ipairs(char:GetChildren()) do
-            if tool:IsA("Tool") then
-                -- Rapid Fire
-                if GunMods.rapidFire then
-                    trySet(tool, "FireRate", 0.01)
-                    trySet(tool, "FireDelay", 0.01)
-                    trySet(tool, "RateOfFire", 0.01)
-                    trySet(tool, "FireRateValue", 0.01)
-                    trySet(tool, "FireDelayValue", 0.01)
-                end
+        local currentTool = char:FindFirstChildOfClass("Tool")
+        if currentTool ~= lastToolModified then
+            lastToolModified = currentTool
+            lastFireRate = nil
+        end
 
-                -- No Recoil
-                if GunMods.noRecoil then
-                    trySet(tool, "Recoil", 0)
-                    trySet(tool, "Kickback", 0)
-                    trySet(tool, "RecoilValue", 0)
-                    trySet(tool, "RecoilAmount", 0)
-                    trySet(tool, "CameraRecoil", 0)
+        if not currentTool then return end
 
-                    -- Também procura por NumberValues dentro da tool
-                    pcall(function()
-                        for _, v in ipairs(tool:GetDescendants()) do
-                            if v:IsA("NumberValue") or v:IsA("IntValue") then
-                                local lowerName = v.Name:lower()
-                                if lowerName:find("recoil") or lowerName:find("kick") or lowerName:find("spread") then
-                                    v.Value = 0
-                                end
-                            end
-                        end
-                    end)
-                end
+        if GunMods.rapidFire then
+            if lastFireRate ~= 0.01 then
+                lastFireRate = 0.01
+                trySet(currentTool, "FireRate", 0.01)
+                trySet(currentTool, "FireDelay", 0.01)
+                trySet(currentTool, "RateOfFire", 0.01)
+                trySet(currentTool, "FireRateValue", 0.01)
+                trySet(currentTool, "FireDelayValue", 0.01)
+                trySet(currentTool, "Cooldown", 0.01)
             end
+        else
+            lastFireRate = nil
+        end
+
+        if GunMods.noRecoil then
+            pcall(function()
+                for _, v in ipairs(currentTool:GetDescendants()) do
+                    if v:IsA("NumberValue") or v:IsA("IntValue") then
+                        local lowerName = v.Name:lower()
+                        if lowerName:find("recoil") or lowerName:find("kick") or lowerName:find("spread") then
+                            v.Value = 0
+                        end
+                    end
+                end
+            end)
         end
     end)
 end

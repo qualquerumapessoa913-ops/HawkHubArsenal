@@ -6,7 +6,8 @@
         "tostring", "tonumber", "math", "ipairs", "pairs", "require",
         "script", "loadstring", "getgenv", "getfenv", "setclipboard",
         "writefile", "readfile", "isfile", "fireclickdetector",
-        "mouse1click", "syn", "krnl", "shared", "_G"
+        "mouse1click", "mouse1down", "mouse1up", "mousemoverel",
+        "syn", "krnl", "shared", "_G"
     ],
     "Lua.diagnostics.disable": [
         "undefined-global", "undefined-field", "need-check-nil", "deprecated"

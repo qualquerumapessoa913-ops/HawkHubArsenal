@@ -1,5 +1,5 @@
 -- ============================================================
--- HAWK HUB UI – Custom Library (COMPLETA E CORRIGIDA)
+-- HAWK HUB UI – Custom Library
 -- ============================================================
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -186,12 +186,6 @@ function UI.new(config)
     layout.SortOrder = Enum.SortOrder.LayoutOrder
     layout.Parent = self.scroll
 
-    -- Padding final pra permitir scroll completo
-    local padding = Instance.new("Frame")
-    padding.Size = UDim2.new(1, 0, 0, 20)
-    padding.BackgroundTransparency = 1
-    padding.Parent = self.scroll
-
     self:MakeDraggable(self.header, self.main)
     return self
 end
@@ -311,7 +305,6 @@ function UI:CreateTab(config)
     end
 
     tab.activate = activate
-
     btn.MouseButton1Click:Connect(activate)
 
     table.insert(self.tabs, tab)

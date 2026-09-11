@@ -1,5 +1,5 @@
 -- ============================================================
--- GUN MODS – Rapid Fire + No Recoil (SEM AUTO-FIRE)
+-- GUN MODS – Rapid Fire + No Recoil (SEM auto-fire)
 -- ============================================================
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -9,7 +9,6 @@ local GunMods = {}
 GunMods.rapidFire = false
 GunMods.noRecoil = false
 
--- Apenas modifica campos que NÃO causam auto-fire
 local FIRE_FIELDS = {"FireRate", "FireDelay", "RateOfFire"}
 
 local function setField(tool, field, value)
@@ -17,7 +16,7 @@ local function setField(tool, field, value)
         local prop = tool[field]
         if prop == nil then return end
         if typeof(prop) == "number" then
-            -- Não dá pra modificar via script, pula
+            -- ignorado
         elseif typeof(prop) == "Instance" then
             pcall(function() prop.Value = value end)
         end
@@ -32,7 +31,6 @@ function GunMods:start()
         if not char then return end
         local tool = char:FindFirstChildOfClass("Tool")
 
-        -- Reset tracking se trocou de tool
         if not tool then
             modified = {}
             return
@@ -43,7 +41,6 @@ function GunMods:start()
             modified[key] = {rapid = false, recoil = false}
         end
 
-        -- Rapid Fire
         if GunMods.rapidFire and not modified[key].rapid then
             for _, field in ipairs(FIRE_FIELDS) do
                 setField(tool, field, 0.03)
@@ -53,7 +50,6 @@ function GunMods:start()
             modified[key].rapid = false
         end
 
-        -- No Recoil
         if GunMods.noRecoil and not modified[key].recoil then
             pcall(function()
                 for _, v in ipairs(tool:GetDescendants()) do

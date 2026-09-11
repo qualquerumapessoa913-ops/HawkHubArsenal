@@ -1,5 +1,5 @@
 -- ============================================================
--- HEAD EXPANDER – Aumenta a hitbox da cabeça dos inimigos
+-- HEAD EXPANDER
 -- ============================================================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")

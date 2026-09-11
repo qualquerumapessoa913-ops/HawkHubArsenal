@@ -1,5 +1,5 @@
 -- ============================================================
--- AIMBOT SILENT – Move o mouse pro HEAD do inimigo, atira, volta
+-- AIMBOT SILENT – Move o mouse pro HEAD, atira, volta
 -- ============================================================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -14,7 +14,6 @@ Aimbot.fov = 120
 Aimbot.targetPart = "Head"
 Aimbot.showFov = true
 
--- FOV Circle
 local fovGui, fovCircle
 
 local function createFovCircle()
@@ -43,7 +42,6 @@ local function createFovCircle()
     stroke.Parent = fovCircle
 end
 
--- Inimigo dentro do FOV do mouse
 local function getTarget()
     local mousePos = UserInputService:GetMouseLocation()
     local closest, closestDist = nil, Aimbot.fov
@@ -68,21 +66,17 @@ local function getTarget()
     return closest
 end
 
--- Silent aim: move o mouse, atira, volta
 local function silentShoot(target)
     if not target then return end
-
     local current = UserInputService:GetMouseLocation()
     local targetX, targetY = math.floor(target.sp.X), math.floor(target.sp.Y)
     local currentX, currentY = math.floor(current.X), math.floor(current.Y)
 
-    -- Move o mouse pro alvo
     pcall(function() mousemoverel(targetX - currentX, targetY - currentY) end)
     pcall(function() VirtualInput:SendMouseMoveEvent(targetX, targetY, 0, game) end)
 
-    task.wait(0.04) -- espera o mouse registrar
+    task.wait(0.04)
 
-    -- Atira no alvo
     pcall(function()
         VirtualInput:SendMouseButtonEvent(targetX, targetY, 0, true, game, 0)
         task.wait(0.02)
@@ -92,7 +86,6 @@ local function silentShoot(target)
 
     task.wait(0.02)
 
-    -- Volta o mouse
     pcall(function() mousemoverel(currentX - targetX, currentY - targetY) end)
     pcall(function() VirtualInput:SendMouseMoveEvent(currentX, currentY, 0, game) end)
 end

@@ -1,5 +1,5 @@
 -- ============================================================
--- ESP – Apenas inimigos (Highlight + Nome + Distância)
+-- ESP – Apenas inimigos
 -- ============================================================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")

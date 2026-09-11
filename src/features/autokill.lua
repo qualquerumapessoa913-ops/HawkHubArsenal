@@ -1,5 +1,5 @@
 -- ============================================================
--- AUTO KILL – Teleporta atrás e executa (faca/arma)
+-- AUTO KILL – Teleporta atrás e executa
 -- ============================================================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")

@@ -1,5 +1,5 @@
 -- ============================================================
--- HAWK HUB ARSENAL – MAIN v2
+-- HAWK HUB ARSENAL – MAIN
 -- ============================================================
 local UserInputService = game:GetService("UserInputService")
 
@@ -11,10 +11,10 @@ local AutoKill = require(script.Parent.features.autokill)
 local GunMods = require(script.Parent.features.gunmods)
 local Backstab = require(script.Parent.features.backstab)
 
--- Configurações
 local Settings = {
     uiScale = 1,
     resizeKeybind = Enum.KeyCode.K,
+    minimizeKeybind = Enum.KeyCode.M,
 }
 
 Aimbot:start()
@@ -29,9 +29,7 @@ local Window = UI.new({
     Subtitle = "Arsenal Edition"
 })
 
--- ============================================================
--- Aba COMBAT
--- ============================================================
+-- COMBAT
 local CombatTab = Window:CreateTab({ name = "Combat", icon = "⚔️" })
 
 Window:CreateSection(CombatTab, "Aimbot (Silent)")
@@ -84,9 +82,7 @@ Window:CreateSlider(CombatTab, {
     callback = function(v) AutoKill.range = v end
 })
 
--- ============================================================
--- Aba VISUALS
--- ============================================================
+-- VISUALS
 local VisualsTab = Window:CreateTab({ name = "Visuals", icon = "👁️" })
 Window:CreateSection(VisualsTab, "ESP")
 Window:CreateToggle(VisualsTab, {
@@ -95,9 +91,7 @@ Window:CreateToggle(VisualsTab, {
     callback = function(v) ESP.enabled = v end
 })
 
--- ============================================================
--- Aba WEAPON
--- ============================================================
+-- WEAPON
 local WeaponTab = Window:CreateTab({ name = "Weapon", icon = "🔫" })
 Window:CreateSection(WeaponTab, "Gun Mods")
 Window:CreateToggle(WeaponTab, {
@@ -111,15 +105,12 @@ Window:CreateToggle(WeaponTab, {
     callback = function(v) GunMods.noRecoil = v end
 })
 
--- ============================================================
--- Aba SETTINGS
--- ============================================================
+-- SETTINGS
 local SettingsTab = Window:CreateTab({ name = "Settings", icon = "⚙️" })
 Window:CreateSection(SettingsTab, "Interface")
 
-local resizeKeybindLabel = Window:CreateLabel(SettingsTab, {
-    text = "Resize Keybind: K"
-})
+local resizeLabel = Window:CreateLabel(SettingsTab, { text = "Resize Keybind: K" })
+local minimizeLabel = Window:CreateLabel(SettingsTab, { text = "Minimize Keybind: M" })
 
 Window:CreateButton(SettingsTab, {
     name = "Change Resize Keybind",
@@ -130,35 +121,57 @@ Window:CreateButton(SettingsTab, {
             if gp then return end
             if input.UserInputType == Enum.UserInputType.Keyboard then
                 Settings.resizeKeybind = input.KeyCode
-                resizeKeybindLabel.Text = "Resize Keybind: " .. input.KeyCode.Name
+                resizeLabel.Text = "Resize Keybind: " .. input.KeyCode.Name
                 conn:Disconnect()
-                Window:Notify("Hawk Hub", "Keybind alterado para " .. input.KeyCode.Name, 2)
+                Window:Notify("Hawk Hub", "Resize: " .. input.KeyCode.Name, 2)
             end
         end)
     end
 })
 
 Window:CreateButton(SettingsTab, {
-    name = "Reset Resize Keybind (K)",
+    name = "Change Minimize Keybind",
+    callback = function()
+        Window:Notify("Hawk Hub", "Pressione qualquer tecla...", 3)
+        local conn
+        conn = UserInputService.InputBegan:Connect(function(input, gp)
+            if gp then return end
+            if input.UserInputType == Enum.UserInputType.Keyboard then
+                Settings.minimizeKeybind = input.KeyCode
+                minimizeLabel.Text = "Minimize Keybind: " .. input.KeyCode.Name
+                conn:Disconnect()
+                Window:Notify("Hawk Hub", "Minimize: " .. input.KeyCode.Name, 2)
+            end
+        end)
+    end
+})
+
+Window:CreateButton(SettingsTab, {
+    name = "Reset Keybinds (K / M)",
     callback = function()
         Settings.resizeKeybind = Enum.KeyCode.K
-        resizeKeybindLabel.Text = "Resize Keybind: K"
+        Settings.minimizeKeybind = Enum.KeyCode.M
+        resizeLabel.Text = "Resize Keybind: K"
+        minimizeLabel.Text = "Minimize Keybind: M"
+        Window:Notify("Hawk Hub", "Keybinds resetados", 2)
     end
 })
 
 Window:CreateSection(SettingsTab, "Info")
 Window:CreateLabel(SettingsTab, { text = "K = Redimensionar UI" })
+Window:CreateLabel(SettingsTab, { text = "M = Minimizar UI" })
 Window:CreateLabel(SettingsTab, { text = "E = Backstab (se ativo)" })
 Window:CreateLabel(SettingsTab, { text = "⚠ Use em conta alternativa!", color = Color3.fromRGB(255, 180, 60) })
 
--- ============================================================
--- KEYBIND K – Redimensionar UI
--- ============================================================
+-- KEYBINDS
 UserInputService.InputBegan:Connect(function(input, gp)
     if gp then return end
     if input.KeyCode == Settings.resizeKeybind then
         Settings.uiScale = (Settings.uiScale == 1) and 1.4 or 1
         Window:SetScale(Settings.uiScale)
+    end
+    if input.KeyCode == Settings.minimizeKeybind then
+        Window:ToggleMinimize()
     end
 end)
 

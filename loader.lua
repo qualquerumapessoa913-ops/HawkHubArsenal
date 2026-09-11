@@ -2,7 +2,6 @@
 -- HAWK HUB ARSENAL – LOADER (jsDelivr + cache-bust)
 -- ============================================================
 
--- jsDelivr atualiza em segundos, raw.githubusercontent tem cache de 5 min
 local BASE = "https://cdn.jsdelivr.net/gh/qualquerumapessoa913-ops/HawkHubArsenal@main/"
 local CACHE_BUST = "?v=" .. tostring(tick())
 
@@ -46,7 +45,6 @@ for name, path in pairs(moduleFiles) do
     end
 end
 
--- Verifica se todos os módulos essenciais foram carregados
 if not M.ui or not M.aimbot then
     warn("[Hawk Hub] ❌ Módulos essenciais não carregaram. Abortando.")
     return
@@ -56,7 +54,6 @@ print("[Hawk Hub] Carregando main.lua...")
 
 local mainCode = game:HttpGet(BASE .. "src/main.lua" .. CACHE_BUST)
 
--- Substitui require() pela tabela global
 mainCode = mainCode:gsub("require%s*%(script%.Parent%.ui%)", "HAWK_MODULES.ui")
 mainCode = mainCode:gsub("require%s*%(script%.Parent%.utils%.helpers%)", "HAWK_MODULES.helpers")
 mainCode = mainCode:gsub("require%s*%(script%.Parent%.features%.aimbot%)", "HAWK_MODULES.aimbot")

@@ -74,9 +74,7 @@ end
 
 local function doBackstab()
     local target = getClosestEnemy()
-    if not target or not target.Character then
-        return
-    end
+    if not target or not target.Character then return end
 
     local knife = equipKnife()
     if not knife then return end
@@ -85,18 +83,13 @@ local function doBackstab()
     local myHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if not targetHRP or not myHRP then return end
 
-    -- Teleporta pra trás do inimigo
     local behindCFrame = targetHRP.CFrame * CFrame.new(0, 0, 2)
     myHRP.CFrame = behindCFrame
-
     task.wait(0.08)
 
-    -- Ativa a faca
     pcall(function() knife:Activate() end)
-
     task.wait(0.05)
 
-    -- Clique na direção
     pcall(function()
         VirtualInput:SendMouseButtonEvent(0, 0, 0, true, game, 0)
         task.wait(0.02)

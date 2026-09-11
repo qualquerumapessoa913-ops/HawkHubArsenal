@@ -2,7 +2,6 @@
 -- HELPERS
 -- ============================================================
 local Helpers = {}
-
 local Players = game:GetService("Players")
 local VirtualInput = game:GetService("VirtualInputManager")
 local LocalPlayer = Players.LocalPlayer
@@ -38,9 +37,7 @@ function Helpers.clickMouse()
         task.wait(0.03)
         VirtualInput:SendMouseButtonEvent(0, 0, 0, false, game, 0)
     end)
-    pcall(function()
-        mouse1click()
-    end)
+    pcall(function() mouse1click() end)
 end
 
 function Helpers.getEnemies()
@@ -58,8 +55,7 @@ function Helpers.getClosestEnemy(maxDist)
     maxDist = maxDist or math.huge
     local myHRP = Helpers.getHRP()
     if not myHRP then return nil end
-    local closest = nil
-    local closestDist = maxDist
+    local closest, closestDist = nil, maxDist
     for _, player in ipairs(Helpers.getEnemies()) do
         local head = Helpers.safeFind(player.Character, "Head")
         if head then

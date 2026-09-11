@@ -1,56 +1,108 @@
 -- ============================================================
--- BACKSTAB – Toggle: teleporta atrás e mata com faca
+-- BACKSTAB – Equipa faca, teleporta atrás, mata (Keybind E)
 -- ============================================================
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
+local VirtualInput = game:GetService("VirtualInputManager")
 local LocalPlayer = Players.LocalPlayer
 
 local Backstab = {}
 Backstab.enabled = false
 Backstab.keybind = Enum.KeyCode.E
 
-local function getKnife()
+local function findKnife()
     local char = LocalPlayer.Character
-    if not char then return nil end
-    for _, tool in ipairs(char:GetChildren()) do
-        if tool:IsA("Tool") and tool.Name:lower():find("knife") then return tool end
+    local backpack = LocalPlayer:FindFirstChild("Backpack")
+
+    if char then
+        for _, tool in ipairs(char:GetChildren()) do
+            if tool:IsA("Tool") then
+                local n = tool.Name:lower()
+                if n:find("knife") or n:find("dagger") or n:find("blade") then
+                    return tool, true
+                end
+            end
+        end
     end
-    return nil
+
+    if backpack then
+        for _, tool in ipairs(backpack:GetChildren()) do
+            if tool:IsA("Tool") then
+                local n = tool.Name:lower()
+                if n:find("knife") or n:find("dagger") or n:find("blade") then
+                    return tool, false
+                end
+            end
+        end
+    end
+    return nil, false
 end
 
-local function doBackstab()
-    local closest, closestDist = nil, 50
+local function equipKnife()
+    local knife, equipped = findKnife()
+    if not knife then return nil end
+    if not equipped then
+        local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if hum then
+            pcall(function() hum:EquipTool(knife) end)
+            task.wait(0.15)
+        end
+    end
+    return knife
+end
+
+local function getClosestEnemy(maxDist)
+    maxDist = maxDist or 60
     local myHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if not myHRP then return end
+    if not myHRP then return nil end
+    local closest, closestDist = nil, maxDist
+    local myTeam = LocalPlayer.Team
     for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Team ~= LocalPlayer.Team then
+        if player ~= LocalPlayer and player.Character and player.Team ~= myTeam then
             local hrp = player.Character:FindFirstChild("HumanoidRootPart")
             if hrp then
-                local dist = (hrp.Position - myHRP.Position).Magnitude
-                if dist < closestDist then
-                    closestDist = dist
+                local d = (hrp.Position - myHRP.Position).Magnitude
+                if d < closestDist then
+                    closestDist = d
                     closest = player
                 end
             end
         end
     end
-    if closest and closest.Character then
-        local hrp = closest.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            myHRP.CFrame = hrp.CFrame * CFrame.new(0, 0, 2)
-            task.wait(0.05)
-            local knife = getKnife()
-            if knife then
-                pcall(function() knife:Activate() end)
-            end
-            pcall(function()
-                game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, true, game, 0)
-                task.wait(0.02)
-                game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, false, game, 0)
-            end)
-            pcall(mouse1click)
-        end
+    return closest
+end
+
+local function doBackstab()
+    local target = getClosestEnemy()
+    if not target or not target.Character then
+        return
     end
+
+    local knife = equipKnife()
+    if not knife then return end
+
+    local targetHRP = target.Character:FindFirstChild("HumanoidRootPart")
+    local myHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not targetHRP or not myHRP then return end
+
+    -- Teleporta pra trás do inimigo
+    local behindCFrame = targetHRP.CFrame * CFrame.new(0, 0, 2)
+    myHRP.CFrame = behindCFrame
+
+    task.wait(0.08)
+
+    -- Ativa a faca
+    pcall(function() knife:Activate() end)
+
+    task.wait(0.05)
+
+    -- Clique na direção
+    pcall(function()
+        VirtualInput:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+        task.wait(0.02)
+        VirtualInput:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+    end)
+    pcall(function() mouse1click() end)
 end
 
 function Backstab:start()

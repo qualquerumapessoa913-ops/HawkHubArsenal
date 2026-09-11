@@ -1,6 +1,5 @@
 -- ============================================================
--- AIMBOT (SILENT) – Tiro vai pro inimigo sem travar a câmera
--- FOV Circle segue o mouse (as 4 setinhas)
+-- AIMBOT SILENT – Move o mouse pro HEAD do inimigo, atira, volta
 -- ============================================================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -8,7 +7,6 @@ local UserInputService = game:GetService("UserInputService")
 local VirtualInput = game:GetService("VirtualInputManager")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
-local Mouse = LocalPlayer:GetMouse()
 
 local Aimbot = {}
 Aimbot.enabled = false
@@ -16,45 +14,37 @@ Aimbot.fov = 120
 Aimbot.targetPart = "Head"
 Aimbot.showFov = true
 
--- ============================================================
--- FOV CIRCLE (segue o mouse)
--- ============================================================
-local fovCircle = nil
+-- FOV Circle
+local fovGui, fovCircle
 
 local function createFovCircle()
-    if fovCircle then fovCircle:Destroy() end
+    if fovGui then fovGui:Destroy() end
+    fovGui = Instance.new("ScreenGui")
+    fovGui.Name = "AimbotFOV"
+    fovGui.ResetOnSpawn = false
+    fovGui.IgnoreGuiInset = true
+    fovGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    fovGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
-    local gui = Instance.new("ScreenGui")
-    gui.Name = "AimbotFOV"
-    gui.ResetOnSpawn = false
-    gui.IgnoreGuiInset = true
-    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-
-    local circle = Instance.new("Frame")
-    circle.Name = "Circle"
-    circle.BackgroundTransparency = 1
-    circle.Size = UDim2.new(0, Aimbot.fov * 2, 0, Aimbot.fov * 2)
-    circle.AnchorPoint = Vector2.new(0.5, 0.5)
-    circle.Parent = gui
+    fovCircle = Instance.new("Frame")
+    fovCircle.BackgroundTransparency = 1
+    fovCircle.Size = UDim2.new(0, Aimbot.fov * 2, 0, Aimbot.fov * 2)
+    fovCircle.AnchorPoint = Vector2.new(0.5, 0.5)
+    fovCircle.Parent = fovGui
 
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(1, 0)
-    corner.Parent = circle
+    corner.Parent = fovCircle
 
     local stroke = Instance.new("UIStroke")
     stroke.Color = Color3.fromRGB(0, 200, 255)
     stroke.Thickness = 1.5
     stroke.Transparency = 0.3
-    stroke.Parent = circle
-
-    fovCircle = circle
+    stroke.Parent = fovCircle
 end
 
--- ============================================================
--- DETECTAR INIMIGO DENTRO DO FOV DO MOUSE
--- ============================================================
-local function getTargetInFov()
+-- Inimigo dentro do FOV do mouse
+local function getTarget()
     local mousePos = UserInputService:GetMouseLocation()
     local closest, closestDist = nil, Aimbot.fov
     local myTeam = LocalPlayer.Team
@@ -64,12 +54,12 @@ local function getTargetInFov()
             local part = player.Character:FindFirstChild(Aimbot.targetPart)
                 or player.Character:FindFirstChild("Head")
             if part then
-                local screenPos, onScreen = Camera:WorldToViewportPoint(part.Position)
+                local sp, onScreen = Camera:WorldToViewportPoint(part.Position)
                 if onScreen then
-                    local dist = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(mousePos.X, mousePos.Y)).Magnitude
-                    if dist < closestDist then
-                        closestDist = dist
-                        closest = {player = player, screenPos = screenPos}
+                    local d = (Vector2.new(sp.X, sp.Y) - Vector2.new(mousePos.X, mousePos.Y)).Magnitude
+                    if d < closestDist then
+                        closestDist = d
+                        closest = {player = player, part = part, sp = sp}
                     end
                 end
             end
@@ -78,42 +68,38 @@ local function getTargetInFov()
     return closest
 end
 
--- ============================================================
--- SILENT AIM – Move o mouse, clica, volta
--- ============================================================
-local function shootAt(target)
+-- Silent aim: move o mouse, atira, volta
+local function silentShoot(target)
     if not target then return end
 
-    local mousePos = UserInputService:GetMouseLocation()
-    local targetX, targetY = target.screenPos.X, target.screenPos.Y
+    local current = UserInputService:GetMouseLocation()
+    local targetX, targetY = math.floor(target.sp.X), math.floor(target.sp.Y)
+    local currentX, currentY = math.floor(current.X), math.floor(current.Y)
 
     -- Move o mouse pro alvo
-    pcall(function()
-        VirtualInput:SendMouseMoveEvent(targetX, targetY, 0, game)
-    end)
+    pcall(function() mousemoverel(targetX - currentX, targetY - currentY) end)
+    pcall(function() VirtualInput:SendMouseMoveEvent(targetX, targetY, 0, game) end)
 
-    task.wait(0.01)
+    task.wait(0.04) -- espera o mouse registrar
 
-    -- Clica
+    -- Atira no alvo
     pcall(function()
         VirtualInput:SendMouseButtonEvent(targetX, targetY, 0, true, game, 0)
-        task.wait(0.01)
+        task.wait(0.02)
         VirtualInput:SendMouseButtonEvent(targetX, targetY, 0, false, game, 0)
     end)
-    pcall(mouse1click)
+    pcall(function() mouse1down() task.wait(0.02) mouse1up() end)
 
-    task.wait(0.01)
+    task.wait(0.02)
 
     -- Volta o mouse
-    pcall(function()
-        VirtualInput:SendMouseMoveEvent(mousePos.X, mousePos.Y, 0, game)
-    end)
+    pcall(function() mousemoverel(currentX - targetX, currentY - targetY) end)
+    pcall(function() VirtualInput:SendMouseMoveEvent(currentX, currentY, 0, game) end)
 end
 
 function Aimbot:start()
     createFovCircle()
 
-    -- Atualiza FOV circle toda frame (segue o mouse)
     RunService.RenderStepped:Connect(function()
         if fovCircle then
             if not Aimbot.showFov or not Aimbot.enabled then
@@ -127,15 +113,13 @@ function Aimbot:start()
         end
     end)
 
-    -- Quando clicar, se tiver inimigo no FOV, redireciona o tiro
     UserInputService.InputBegan:Connect(function(input, gp)
         if gp then return end
         if not Aimbot.enabled then return end
         if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
-
-        local target = getTargetInFov()
+        local target = getTarget()
         if target then
-            shootAt(target)
+            silentShoot(target)
         end
     end)
 end
